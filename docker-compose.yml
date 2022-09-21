@@ -1,0 +1,30 @@
+version: "3.9"
+services:
+  keycloak:
+      deploy:
+        resources:
+          limits:
+            cpus: 1
+            memory: 2G
+          reservations:
+            cpus: 1
+            memory: 2G
+      image: quay.io/keycloak/keycloak:16.1.0
+      environment:
+        JGROUPS_DISCOVERY_EXTERNAL_IP: ${EXTERNAL_IP}
+      env_file:
+        - ./environments/${APP_NAME}/${ENV}/.env
+      ports:
+        - 8080:8080
+        - 7600:7600
+        - 57600:57600
+      restart: always
+      volumes:
+        - ./startup-scripts:/opt/jboss/startup-scripts/
+        - ./jars/keycloak-metrics-spi-2.5.3-SNAPSHOT.jar:/opt/jboss/keycloak/standalone/deployments/keycloak-metrics-spi-2.5.3-SNAPSHOT.jar
+      healthcheck:
+        test: ["CMD", "curl", "-I", "http://localhost:8080/auth/"]
+        interval: 40s
+        timeout: 30s
+        retries: 5
+        start_period: 90s
